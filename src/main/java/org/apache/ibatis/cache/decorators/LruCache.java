@@ -23,6 +23,8 @@ import org.apache.ibatis.cache.Cache;
 /**
  * Lru (least recently used) cache decorator.
  *
+ * 内部使用链表（增删比较快）实现最近最少使用，防溢出机制
+ *
  * @author Clinton Begin
  */
 public class LruCache implements Cache {
@@ -67,6 +69,9 @@ public class LruCache implements Cache {
     cycleKeyList(key);
   }
 
+  /**
+   * 每次访问都会遍历一次key进行重新排序，将访问元素放到链表尾部
+   */
   @Override
   public Object getObject(Object key) {
     keyMap.get(key); // touch

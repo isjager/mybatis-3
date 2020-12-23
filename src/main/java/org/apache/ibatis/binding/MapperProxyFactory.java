@@ -43,6 +43,10 @@ public class MapperProxyFactory<T> {
     return methodCache;
   }
 
+  /**
+   * 生成Mapper接口的动态代理类MapperProxy，MapperProxy实现了InvocationHandler接口
+   * @return
+   */
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);

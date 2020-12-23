@@ -43,10 +43,12 @@ public class MapperRegistry {
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
+    // 如果配置文件中没有相关的Mapper，直接抛出异常
     if (mapperProxyFactory == null) {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
+      // 执行代理方法
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);

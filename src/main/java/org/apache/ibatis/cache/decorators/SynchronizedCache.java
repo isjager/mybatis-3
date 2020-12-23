@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,13 @@ package org.apache.ibatis.cache.decorators;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 线程同步缓存区
+ *
+ * 实现线程同步功能，与序列化缓存区共同保证二级缓存线程安全。若blocking=false关闭则SynchronizedCache位于责任链的最前端，
+ * 否则就位于BlockingCache后面而BlockingCache位于责任链的最前端，从而保证了整条责任链是线程同步的。
+ *
+ * 源码分析：对于操作缓存的方法都进行了线程同步功能：synchronized
+ *
  * @author Clinton Begin
  */
 public class SynchronizedCache implements Cache {

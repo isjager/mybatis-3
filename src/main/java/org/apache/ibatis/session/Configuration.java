@@ -664,15 +664,36 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * interceptorChain生成代理类，
+   *
+   * Executor分为两大类：
+   *    一个是CachingExecutor，另一类是普通Executor
+   *
+   * 普通Executor分为三种的Executor执行器：BatchExecutor、ReuseExecutor、SimpleExecutor
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
     if (ExecutorType.BATCH == executorType) {
+      /**
+       * BatchExecutor：执行update（没有select，JDBC批处理不支持select），将所有sql都添加到批处理中（addBatch()），
+       * 等待统一执行（executeBatch()），它缓存了多个Statement对象，每个Statement对象都是addBatch()完毕后，
+       * 等待逐一执行executeBatch()批处理，与JDBC批处理相同
+       */
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
+      /**
+       * ReuseExecutor：执行update或select，以sql作为key查找Statement对象，存在使用，不存在就构建，
+       * 用完后，不关闭Statement对象，而是放置于Map<String,Statement>内，供下一次使用，
+       * 简而言之，就是重复使用Statement对象
+       */
       executor = new ReuseExecutor(this, transaction);
     } else {
+      /**
+       * SimpleExecutor：每执行一次update或select，就开启一个Statement对象，用完立刻关闭Statement对象
+       */
       executor = new SimpleExecutor(this, transaction);
     }
     if (cacheEnabled) {
@@ -842,6 +863,11 @@ public class Configuration {
   }
 
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    /**
+     * mapperRegistry实质上是一个Map，里面注册了启动过程中解析的各种Mapper.xml
+     * mapperRegistry的key是接口的Class类型
+     * mapperRegistry的value是MapperProxyFactory，用于生成对应的MapperProxy（动态代理）
+     */
     return mapperRegistry.getMapper(type, sqlSession);
   }
 

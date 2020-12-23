@@ -103,20 +103,50 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       // issue #117 read properties first
+
+      // 解析properties标签，并set到Configuration对象中
+      // 在properties配置属性后，在Mybatis的配置文件中就可以使用${key}的形式使用了
       propertiesElement(root.evalNode("properties"));
+
+      // 解析setting标签的配置
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      // 添加vfs的自定义实现，这个功能不怎么用
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
+
+      // 配置别名，配置后可以用别名来替代全限定名
+      // mybatis默认设置了很多别名
       typeAliasesElement(root.evalNode("typeAliases"));
+
+      /**
+       * 解析拦截器和烂机器属性，set到Configuration的interceptorChain中
+       * Mybatis允许在已映射语句执行过程中的某一点进行拦截调用。默认情况下，Mybatis允许使用插件来拦截的方法调用，包括：
+       * Executor(update, query, flushStatements, commit, rollback, getTransaction, close, isClosed)
+       * ParameterHandler(getParameterObject, setParameters)
+       * ResultSetHandler(handleResultSets, handleOutputParameters)
+       * StatementHandler(prepare, parameterize, batch, update, query)
+       */
       pluginElement(root.evalNode("plugins"));
+
+      // Mybatis创建对象是会使用objectFactory来创建对象，一般情况下不会自己配置这个objectFactory，使用系统默认的objectFactory就好
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+
+      // 设置在setting标签中配置的
       settingsElement(settings);
+
       // read it after objectFactory and objectWrapperFactory issue #631
+      /**
+       * 解析环境信息，包括事务管理器和数据源，SqlSessionFactoryBuilder在解析时需要指定环境id，如果不指定的话，会选择默认的环境：
+       * 最后将这些信息set到Configuration的Environment属性里面
+       */
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+
+      // 解析typeHandlers：无论是Mybatis在预处理语句（ParameterHandler）中设置一个参数时，还是从结果集中取出一个值时，都会用类型处理器将获取的值以合适的方式转换成Java类型，
       typeHandlerElement(root.evalNode("typeHandlers"));
+      // 解析Mapper
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);

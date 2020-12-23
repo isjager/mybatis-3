@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.apache.ibatis.cache.Cache;
 
 /**
  * FIFO (first in, first out) cache decorator.
+ *
+ * 队列存储key，实现先进先出防溢出机制
  *
  * @author Clinton Begin
  */
@@ -75,8 +77,11 @@ public class FifoCache implements Cache {
 
   private void cycleKeyList(Object key) {
     keyList.addLast(key);
+    // 比较当前队列元素个数是否大于设定值
     if (keyList.size() > size) {
+      // 移除队列头元素
       Object oldestKey = keyList.removeFirst();
+      // 根据移除元素的key，移除缓存区中的对应元素
       delegate.removeObject(oldestKey);
     }
   }

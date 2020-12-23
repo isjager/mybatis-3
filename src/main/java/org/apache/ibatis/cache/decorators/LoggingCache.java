@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 统计二级缓存命中率并输出打印，日志中出现"Cache Hit Ratio"便表示命中了二级缓存
+ *
  * @author Clinton Begin
  */
 public class LoggingCache implements Cache {
@@ -51,11 +53,15 @@ public class LoggingCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
+    // 执行一次查询加一次
     requests++;
+    // 查询缓存中是否已经存在
     final Object value = delegate.getObject(key);
     if (value != null) {
+      // 命中一次加一次
       hits++;
     }
+    // 开启debug日志
     if (log.isDebugEnabled()) {
       log.debug("Cache Hit Ratio [" + getId() + "]: " + getHitRatio());
     }
@@ -82,7 +88,11 @@ public class LoggingCache implements Cache {
     return delegate.equals(obj);
   }
 
+  /**
+   * 计算命中率
+   */
   private double getHitRatio() {
+    // 命中次数：查询次数
     return (double) hits / (double) requests;
   }
 

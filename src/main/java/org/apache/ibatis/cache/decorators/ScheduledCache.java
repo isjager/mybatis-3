@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 定时清理过期缓存区，操作缓存时都会进行检查缓存是否过期
+ *
  * @author Clinton Begin
  */
 public class ScheduledCache implements Cache {
@@ -30,6 +32,7 @@ public class ScheduledCache implements Cache {
 
   public ScheduledCache(Cache delegate) {
     this.delegate = delegate;
+    // 设置过期清理时间默认1小时
     this.clearInterval = TimeUnit.HOURS.toMillis(1);
     this.lastClear = System.currentTimeMillis();
   }
@@ -83,7 +86,9 @@ public class ScheduledCache implements Cache {
   }
 
   private boolean clearWhenStale() {
+    // 判断当前时间与上次清理时间差是否大于设置的过期清理时间
     if (System.currentTimeMillis() - lastClear > clearInterval) {
+      // 一旦进行清理便是清理全部缓存
       clear();
       return true;
     }

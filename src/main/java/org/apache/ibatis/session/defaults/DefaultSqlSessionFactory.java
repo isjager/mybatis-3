@@ -93,7 +93,9 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      // 获取执行器，这边获得的执行器已经代理拦截器功能
       final Executor executor = configuration.newExecutor(tx, execType);
+      // 根据获取的执行器创建SqlSession
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()
